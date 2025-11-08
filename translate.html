@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Google Translate (Frasic ⇄ English)</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+    :root{--border:#dadce0;--accent:#1a73e8;--fg:#202124;--muted:#5f6368}
+    body {margin:0;font-family:Roboto,Arial,sans-serif;background:#fff;color:var(--fg);display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;}
+    header {position:absolute;top:0;left:0;width:100%;display:flex;justify-content:space-between;align-items:center;padding:10px 20px;border-bottom:1px solid var(--border);} 
+    header .left, header .right {display:flex;align-items:center;gap:16px;} 
+    header a {text-decoration:none;color:#202124;font-size:14px;} 
+    header .material-icons {color:#5f6368;cursor:pointer;} 
+    .translate-box {display:flex;gap:20px;width:min(980px,94%);} 
+    .panel {flex:1;border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;} 
+    .panel textarea {width:100%;min-height:150px;resize:vertical;font-size:16px;border:none;outline:none;} 
+    .controls {display:flex;align-items:center;justify-content:space-between;gap:10px} 
+    .controls select {border:none;font-size:14px;color:var(--fg);outline:none;background:transparent;padding:6px} 
+    .translate-btn {background:var(--accent);color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;font-weight:500;} 
+    .translate-btn:hover {background:#185abc;} 
+  </style>
+</head>
+<body>
+  <header>
+    <div class="left">
+      <a href="index.html"><span class="material-icons">arrow_back</span></a>
+      <a href="index.html">Google</a>
+    </div>
+    <div class="right">
+      <a href="#">Gmail</a>
+      <a href="#">Images</a>
+      <span class="material-icons">apps</span>
+      <span class="material-icons">account_circle</span>
+    </div>
+  </header>
+
+  <div class="translate-box">
+    <div class="panel">
+      <div class="controls">
+        <select id="fromLang">
+          <option value="en">English</option>
+          <option value="oldfrasic">Old Frasic</option>
+          <option value="middlefrasic">Middle Frasic</option>
+        </select>
+      </div>
+      <textarea id="fromText" placeholder="Enter text… e.g., Ẏā ðɛshɓ ɖḡʋ ɓɲðm, or ȷƈelandȷk."></textarea>
+    </div>
+
+    <div class="panel">
+      <div class="controls">
+        <select id="toLang">
+          <option value="oldfrasic">Old Frasic</option>
+          <option value="middlefrasic">Middle Frasic</option>
+          <option value="en">English</option>
+        </select>
+        <button class="translate-btn" id="translateBtn">Translate</button>
+      </div>
+      <textarea id="toText" placeholder="Translation" readonly></textarea>
+    </div>
+  </div>
+
+  <script>
+    const oldFrasic = [
+      {f:"ɓɲðm", e:"person"},{f:"Ɓɲðmā", e:"friend"},{f:"Hoɛz", e:"house"},{f:"Ɲāḡɖo", e:"ball"},{f:"ƃo", e:"hi"},{f:"Ðkɲoʋ", e:"good morning"},{f:"Ðkɲoʋā", e:"good night"},{f:"ɖoḡ", e:"cat"},{f:"ɠɛzɲ", e:"dog"},{f:"ɖāɠ", e:"cow"},{f:"Ɗiḡ", e:"pig"},{f:"ɖḡʋ", e:"hear"},{f:"oḡdā", e:"happen"},{f:"oushɛ", e:"become"},{f:"ɠɛʋɖɛ", e:"get"},{f:"ɖḡʋā", e:"blush"},{f:"ɛkɲoʋsðā", e:"build"},{f:"ɓmy", e:"buy"},{f:"oushɛā", e:"camp"},{f:"ḡtā", e:"climb"},{f:"Ẏā", e:"I"},{f:"āḡð", e:"you"},{f:"ðl", e:"he"},{f:"ɓll", e:"she"},{f:"Ɖā", e:"my"},{f:"ðɛshɓ", e:"soon"},{f:"ðɛshɓɠ", e:"then"},{f:"Sð", e:"not"},{f:"Ā", e:"plural"}
+    ];
+
+    const middleFrasic = [
+      {f:"ȷƈelandȷk", e:"person"},{f:"Jaƈkȷnɓeƥoz", e:"house"},{f:"Hęrƈƥ", e:"herd"},{f:"Ƥd", e:"and"},{f:"Ɓę", e:"the"},{f:"Gųtęntag", e:"heard"},{f:"Ẉe", e:"the"},{f:"Nɓƈkę", e:"no"},{f:"Ɓękęs", e:"did"},{f:"Nɓƈkęt", e:"not"},{f:"Ɓzaġ", e:"want"},{f:"ƥɓrog", e:"cat"},{f:"ġęɓn", e:"dog"},{f:"ƥaġ", e:"cow"},{f:"ƥȷg", e:"pig"},{f:"yęƈ", e:"you"},{f:"Kaɓęȷ", e:"cafe"},{f:"ųndęrstðƥ", e:"spirit"},{f:"skƈƥƈ", e:"it"},{f:"skƈƥa", e:"is"},{f:"skƈƥat", e:"it's"},{f:"Ɓt", e:"while"},{f:"Ɓęta", e:"didn't"}
+    ];
+
+    function buildMaps(data){
+      return {
+        FE: new Map(data.map(o=>[o.f.toLowerCase(),o.e.toLowerCase()])),
+        EF: new Map(data.map(o=>[o.e.toLowerCase(),o.f.toLowerCase()]))
+      };
+    }
+
+    const maps = {
+      oldfrasic: buildMaps(oldFrasic),
+      middlefrasic: buildMaps(middleFrasic)
+    };
+
+    const fromSel=document.getElementById('fromLang');
+    const toSel=document.getElementById('toLang');
+    const from=document.getElementById('fromText');
+    const to=document.getElementById('toText');
+    const btn=document.getElementById('translateBtn');
+
+    function translateText(){
+      const src=fromSel.value,dst=toSel.value,text=from.value.trim();
+      if(!text){to.value='';return;}
+
+      const srcMap = maps[src];
+      const dstMap = maps[dst];
+
+      // Split words by spaces or commas, preserving commas
+      const tokens = text.split(/(,|\s+)/).filter(Boolean);
+
+      let out;
+      if(src==='en'){
+        out=tokens.map(w=>dstMap && !/[,\s]/.test(w)?(dstMap.EF.get(w.toLowerCase())||w):w).join('');
+      } else if(dst==='en'){
+        out=tokens.map(w=>srcMap && !/[,\s]/.test(w)?(srcMap.FE.get(w.toLowerCase())||w):w).join('');
+      } else if(src!=='en' && dst!=='en'){
+        const inter=tokens.map(w=>srcMap && !/[,\s]/.test(w)?(srcMap.FE.get(w.toLowerCase())||w):w).join('');
+        const interTokens=inter.split(/(,|\s+)/).filter(Boolean);
+        out=interTokens.map(w=>dstMap && !/[,\s]/.test(w)?(dstMap.EF.get(w.toLowerCase())||w):w).join('');
+      } else {
+        out=text;
+      }
+      to.value=out;
+    }
+
+    btn.addEventListener('click',translateText);
+    from.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();translateText();}});
+  </script>
+</body>
+</html>
