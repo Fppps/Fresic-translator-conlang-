@@ -44,7 +44,7 @@
           <option value="middlefrasic">Middle Frasic</option>
         </select>
       </div>
-      <textarea id="fromText" placeholder="Enter text… e.g., Good morning or ȷƈelandȷk."></textarea>
+      <textarea id="fromText" placeholder="Enter text… e.g., Good morning, Not night, or Ðkɲoʋā."></textarea>
     </div>
 
     <div class="panel">
@@ -62,7 +62,9 @@
 
   <script>
     const oldFrasic = [
-      {f:"ɓɲðm", e:"person"},{f:"Ɓɲðmā", e:"friend"},{f:"Hoɛz", e:"house"},{f:"Ɲāḡɖo", e:"ball"},{f:"ƃo", e:"hi"},{f:"Ðkɲoʋ", e:"good morning"},{f:"Ðkɲoʋā", e:"good night"},{f:"ɖoḡ", e:"cat"},{f:"ɠɛzɲ", e:"dog"},{f:"ɖāɠ", e:"cow"},{f:"Ɗiḡ", e:"pig"},{f:"ɖḡʋ", e:"hear"},{f:"oḡdā", e:"happen"},{f:"oushɛ", e:"become"},{f:"ɠɛʋɖɛ", e:"get"},{f:"ɖḡʋā", e:"blush"},{f:"ɛkɲoʋsðā", e:"build"},{f:"ɓmy", e:"buy"},{f:"oushɛā", e:"camp"},{f:"ḡtā", e:"climb"},{f:"Ẏā", e:"i"},{f:"āḡð", e:"you"},{f:"ðl", e:"he"},{f:"ɓll", e:"she"},{f:"Ɖā", e:"my"},{f:"ðɛshɓ", e:"soon"},{f:"ðɛshɓɠ", e:"then"},{f:"Sð", e:"not"},{f:"Ā", e:"plural"}
+      {f:"ɓɲðm", e:"person"},{f:"Ɓɲðmā", e:"friend"},{f:"Hoɛz", e:"house"},{f:"Ɲāḡɖo", e:"ball"},{f:"ƃo", e:"hi"},
+      {f:"Ðkɲoʋ", e:"good morning"},{f:"Ðkɲoʋā", e:"good night"},{f:"Ɛkɲoʋsð", e:"not night"},{f:"Ɛkɲoʋs", e:"not morning"},
+      {f:"ɖoḡ", e:"cat"},{f:"ɠɛzɲ", e:"dog"},{f:"ɖāɠ", e:"cow"},{f:"Ɗiḡ", e:"pig"},{f:"ɖḡʋ", e:"hear"},{f:"oḡdā", e:"happen"},{f:"oushɛ", e:"become"},{f:"ɠɛʋɖɛ", e:"get"},{f:"ɖḡʋā", e:"blush"},{f:"ɛkɲoʋsðā", e:"build"},{f:"ɓmy", e:"buy"},{f:"oushɛā", e:"camp"},{f:"ḡtā", e:"climb"},{f:"Ẏā", e:"i"},{f:"āḡð", e:"you"},{f:"ðl", e:"he"},{f:"ɓll", e:"she"},{f:"Ɖā", e:"my"},{f:"ðɛshɓ", e:"soon"},{f:"ðɛshɓɠ", e:"then"},{f:"Sð", e:"not"},{f:"Ā", e:"plural"}
     ];
 
     const middleFrasic = [
@@ -75,7 +77,6 @@
       data.forEach(o => {
         FE.set(o.f.toLowerCase(), o.e.toLowerCase());
         EF.set(o.e.toLowerCase(), o.f);
-        // Also split English phrases for better match
         const words = o.e.toLowerCase().split(' ');
         if (words.length > 1) {
           EF.set(words.join(' '), o.f);
@@ -107,19 +108,25 @@
       let out;
       if(src==='en'){
         const joined = text.toLowerCase();
-        // Try to find exact phrase match first
         const direct = dstMap?.EF.get(joined);
         if(direct){
           out = direct;
         } else {
-          out=tokens.map(w=>dstMap && !/[,\s]/.test(w)?(dstMap.EF.get(w.toLowerCase())||w):w).join('');
+          out=tokens.map(w=>dstMap && !/[\s,]/.test(w)?(dstMap.EF.get(w.toLowerCase())||w):w).join('');
         }
       } else if(dst==='en'){
-        out=tokens.map(w=>srcMap && !/[,\s]/.test(w)?(srcMap.FE.get(w.toLowerCase())||w):w).join('');
+        out=tokens.map(w=>srcMap && !/[\s,]/.test(w)?(srcMap.FE.get(w.toLowerCase())||w):w).join('');
       } else if(src!=='en' && dst!=='en'){
-        const inter=tokens.map(w=>srcMap && !/[,\s]/.test(w)?(srcMap.FE.get(w.toLowerCase())||w):w).join('');
-        const interTokens=inter.split(/(,|\s+)/).filter(Boolean);
-        out=interTokens.map(w=>dstMap && !/[,\s]/.test(w)?(dstMap.EF.get(w.toLowerCase())||w):w).join('');
+        const joined=text.toLowerCase();
+        const directPhrase = srcMap?.FE.get(joined);
+        if(directPhrase){
+          const tempEnglish = directPhrase;
+          out = dstMap?.EF.get(tempEnglish) || directPhrase;
+        } else {
+          const inter=tokens.map(w=>srcMap && !/[\s,]/.test(w)?(srcMap.FE.get(w.toLowerCase())||w):w).join('');
+          const interTokens=inter.split(/(,|\s+)/).filter(Boolean);
+          out=interTokens.map(w=>dstMap && !/[\s,]/.test(w)?(dstMap.EF.get(w.toLowerCase())||w):w).join('');
+        }
       } else {
         out=text;
       }
